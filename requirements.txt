@@ -1,5 +1,2 @@
 python-telegram-bot==21.11.1
 gunicorn
-nginx
-asyncio
-python-dotenv
