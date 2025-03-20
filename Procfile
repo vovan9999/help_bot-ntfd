@@ -1,1 +1,1 @@
-worker: python help_osnova.py
+worker: python bot.py
