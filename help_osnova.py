@@ -1,6 +1,10 @@
-import asyncio
+# import asyncio
+import os
 from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ConversationHandler, CallbackContext
+
+# Отримуємо токен з змінних оточення (Railway)
+TOKEN = os.getenv("TOKEN")
 
 # Стан для розмови
 SELECT_ACTION, SELECT_MEDICAL, PROCESS_CONCLUSION, UPLOAD_DOCUMENT, CONFIRM_REQUEST = range(5)
@@ -326,7 +330,7 @@ async def unknown(update: Update, context: CallbackContext):
     await update.message.reply_text('Вибачте, я не зрозумів, що ви маєте на увазі.')
 
 def main():
-    application = Application.builder().token("6783640127:AAFuWEJ92wEhkqcA9BP-njElkUNPyF8Vfhc").build()
+    application = Application.builder().token(TOKEN).build()
 
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("start", start)],
