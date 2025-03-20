@@ -2,8 +2,9 @@
 import os
 from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ConversationHandler, CallbackContext
+from dotenv import load_dotenv
 
-# Отримуємо токен з змінних оточення (Railway)
+load_dotenv()
 TOKEN = os.getenv("TOKEN")
 
 # Стан для розмови
@@ -353,7 +354,7 @@ def main():
             "STEP_7": [MessageHandler(filters.TEXT & ~filters.COMMAND, step_7)],  # Крок 7
             "STEP_8": [MessageHandler(filters.TEXT & ~filters.COMMAND, step_8)],  # Крок 8
             "STEP_9": [MessageHandler(filters.TEXT & ~filters.COMMAND, step_9)],  # Крок 9
-            "STEP_10": [MessageHandler(filters.TEXT & ~filters.COMMAND, step_9)],  # Крок 10
+            "STEP_10": [MessageHandler(filters.TEXT & ~filters.COMMAND, step_10)],  # Крок 10
         },
         fallbacks=[
         CommandHandler("start", start),  # Додаємо перезапуск через /start
