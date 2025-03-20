@@ -1,4 +1,3 @@
-import asyncio
 import os
 from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ConversationHandler, CallbackContext
@@ -367,4 +366,4 @@ def main():
     application.run_polling()
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
