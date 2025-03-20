@@ -5,7 +5,7 @@ from telegram.ext import Application, CommandHandler, MessageHandler, filters, C
 from dotenv import load_dotenv
 
 load_dotenv()
-TOKEN = os.getenv("TOKEN")
+TOKEN = os.getenv("BOT_TOKEN")
 
 # Стан для розмови
 SELECT_ACTION, SELECT_MEDICAL, PROCESS_CONCLUSION, UPLOAD_DOCUMENT, CONFIRM_REQUEST = range(5)
