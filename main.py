@@ -363,7 +363,7 @@ async def unknown(update: Update, context: CallbackContext):
     await update.message.reply_text('Вибачте, я не зрозумів, що ви маєте на увазі.')
 
 def main():
-    application = Application.builder().token("TOKEN").build()
+    application = Application.builder().token(TOKEN).build()
 
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("start", start)],
