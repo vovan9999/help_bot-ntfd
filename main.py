@@ -1,10 +1,10 @@
 import os
 from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ConversationHandler, CallbackContext
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 
-load_dotenv()
-TOKEN = os.getenv("BOT_TOKEN")
+# load_dotenv()
+# TOKEN = os.getenv("BOT_TOKEN")
 
 # Стан для розмови
 (
@@ -22,13 +22,15 @@ TOKEN = os.getenv("BOT_TOKEN")
     UPLOAD_PASSPORT,
     STEP_5,
     UPLOAD_IPN,
+    UPLOAD_MED_DOC,
     STEP_6,
     UPLOAD_FINANCIAL_DOCUMENT,
     STEP_7,
     STEP_8,
     STEP_9,
     STEP_10,
-) = range(20)
+    STEP_11,
+) = range(22)
 
 # Головне меню
 main_menu = [["Медицина 🚑", "Авто 🚘"],
@@ -246,7 +248,7 @@ async def step_5(update: Update, context: CallbackContext):
         return UPLOAD_IPN  # Переходимо до завантаження ІПН
     return STEP_5
 
-# Завантаження ІПН
+# Обробник завантаження ІПН
 async def upload_ipn(update: Update, context: CallbackContext):
     if update.message.photo:
         reply_markup = ReplyKeyboardMarkup([["Додати ще", "Наступний крок"]], resize_keyboard=True)
@@ -256,26 +258,45 @@ async def upload_ipn(update: Update, context: CallbackContext):
         await update.message.reply_text("Будь ласка, надішліть фото ІПН.")
         return UPLOAD_IPN
 
-# Крок 6: Завантаження фінансового документа
+# ----------оновлення--------
+# Крок 6: Завантаження медичного документа
 async def step_6(update: Update, context: CallbackContext):
+    text = update.message.text
+    if text == "Наступний крок":
+        await update.message.reply_text("Додайте копію /фото документу з лікувального закладу засвідченого печаткою закладу", reply_markup=ReplyKeyboardRemove())
+        return UPLOAD_MED_DOC  # Переходимо до завантаження ІПН
+    return STEP_6
+# Обробник завантаження медичного документа
+async def upload_med_doc(update: Update, context: CallbackContext):
+    if update.message.photo:
+        reply_markup = ReplyKeyboardMarkup([["Додати ще", "Наступний крок"]], resize_keyboard=True)
+        await update.message.reply_text("Додайте ще фото або перейдіть до наступного документу.", reply_markup=reply_markup)
+        return STEP_7  # Переходимо до завантаження фінансового документа після фото ІПН
+    else:
+        await update.message.reply_text("Додайте копію /фото документу з лікувального закладу засвідченого печаткою закладу")
+        return UPLOAD_MED_DOC
+# ----------кінець оновлення--------
+
+# Крок 7: Завантаження фінансового документа
+async def step_7(update: Update, context: CallbackContext):
     text = update.message.text
     if text == "Наступний крок":
         await update.message.reply_text("Додайте копію /фото  фінансового документу, що підтверджує фактичну оплату коштів (фіскальні/товарні чеки)", reply_markup=ReplyKeyboardRemove())
         return UPLOAD_FINANCIAL_DOCUMENT  # Переходимо до завантаження фінансового документа
-    return STEP_6
+    return STEP_7
 
-# Завантаження фінансового документа
+# Обробник завантаження фінансового документа
 async def upload_financial_document(update: Update, context: CallbackContext):
     if update.message.photo:
         reply_markup = ReplyKeyboardMarkup([["Додати ще", "Перейти до наступного документу"]], resize_keyboard=True)
         await update.message.reply_text("Додайте ще фото або перейдіть до наступного документу.", reply_markup=reply_markup)
-        return STEP_7
+        return STEP_8
     else:
         await update.message.reply_text("Будь ласка, надішліть фото фінансового документу.")
         return UPLOAD_FINANCIAL_DOCUMENT
 
-# Крок 7
-async def step_7(update: Update, context: CallbackContext):
+# Крок 8 : Вибір способу виплати
+async def step_8(update: Update, context: CallbackContext):
     text = update.message.text
 
     if text == "Перейти до наступного документу":
@@ -287,7 +308,7 @@ async def step_7(update: Update, context: CallbackContext):
             "Крок 4: Вкажіть банківські реквізити законного отримувача. \n Оберіть опцію з запропонованих нижче: \n \n Вкажіть варіант яким чином Вам зручно отримати виплату:",
             reply_markup=reply_markup
         )
-        return STEP_8  # Перехід до вибору способу оплати
+        return STEP_9  # Перехід до вибору способу оплати
 
     elif text == "Повернутися":
         # Повернення до завантаження документів
@@ -297,10 +318,10 @@ async def step_7(update: Update, context: CallbackContext):
         )
         return UPLOAD_FINANCIAL_DOCUMENT
 
-    return STEP_7
+    return STEP_8
 
-# Крок 8
-async def step_8(update: Update, context: CallbackContext):
+# Крок 9: Вибір способу виплати
+async def step_9(update: Update, context: CallbackContext):
     text = update.message.text
 
     if text == "Райфайзен-експрес":
@@ -312,14 +333,14 @@ async def step_8(update: Update, context: CallbackContext):
             "Сума виплати буде зменшена на комісію АТ «Райффайзен Банк» чинну на дату операції.",
             reply_markup=reply_markup
         )
-        return STEP_9  # Перехід до підтвердження
+        return STEP_10  # Перехід до підтвердження
 
     elif text == "Реквізити (IBAN рахунку)":
         await update.message.reply_text(
             "Введіть номер IBAN (UA…...29 символів):",
             reply_markup=ReplyKeyboardRemove()
         )
-        return STEP_9  # Той же стан, але очікує IBAN
+        return STEP_10  # Той же стан, але очікує IBAN
 
     elif text == "Повернутися":
         # Повернення до step_7 (вибір документів)
@@ -333,9 +354,10 @@ async def step_8(update: Update, context: CallbackContext):
         )
         return UPLOAD_FINANCIAL_DOCUMENT
 
-    return STEP_8
+    return STEP_9
 
-async def step_9(update: Update, context: CallbackContext):
+# Крок 10: Підтвердження реквізитів та напрямку виплати
+async def step_10(update: Update, context: CallbackContext):
     text = update.message.text
 
     if text == "Продовжити" or (text and len(text) == 29):  # IBAN або кнопка
@@ -350,7 +372,7 @@ async def step_9(update: Update, context: CallbackContext):
             "Підтверджую коректність реквізитів та напрямок виплати:",
             reply_markup=reply_markup
         )
-        return STEP_10
+        return STEP_11
 
     elif text == "Повернутися":
         reply_markup = ReplyKeyboardMarkup(
@@ -361,7 +383,7 @@ async def step_9(update: Update, context: CallbackContext):
             "Ви повернулися на попередній крок. Виберіть спосіб виплати:",
             reply_markup=reply_markup
         )
-        return STEP_8
+        return STEP_9
 
     elif text == "Відмінити відправку заявки":
         reply_markup = ReplyKeyboardMarkup(main_menu, resize_keyboard=True)
@@ -372,11 +394,11 @@ async def step_9(update: Update, context: CallbackContext):
         return SELECT_ACTION
 
     await update.message.reply_text("Невірний ввід. Спробуйте ще.")
-    return STEP_9
+    return STEP_10
 
 
-# Крок 10: Підтвердження заявки та повернення в головне меню
-async def step_10(update: Update, context: CallbackContext):
+# Крок 11: Підтвердження заявки та повернення в головне меню
+async def step_11(update: Update, context: CallbackContext):
     text = update.message.text
 
     if text == "Підтверджую коректність реквізитів та напрямок виплати":
@@ -395,13 +417,13 @@ async def step_10(update: Update, context: CallbackContext):
 
     elif text == "Повернутися":
         # Повернення до step_9
-        return await step_9(update, context)
+        return await step_10(update, context)
 
     elif text == "Відмінити відправку заявки":
         # Скасування
-        return await step_9(update, context)  # Або відразу в головне меню
+        return await step_10(update, context)  # Або відразу в головне меню
 
-    return STEP_10
+    return STEP_11
 
 
 # Логіка для обробки невідомих команд
@@ -409,7 +431,7 @@ async def unknown(update: Update, context: CallbackContext):
     await update.message.reply_text('Вибачте, я не зрозумів, що ви маєте на увазі.')
 
 def main():
-    application = Application.builder().token(TOKEN).build()
+    application = Application.builder().token("5846578020:AAGcg3I2Nn3Yf6H-FAr-TcvNBfTOnTI3Pn4").build()
 
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("start", start)],
@@ -429,12 +451,14 @@ def main():
             UPLOAD_PASSPORT: [MessageHandler(filters.PHOTO, upload_passport), MessageHandler(filters.TEXT & ~filters.COMMAND, next_step)],
             STEP_5: [MessageHandler(filters.TEXT & ~filters.COMMAND, step_5)],
             UPLOAD_IPN: [MessageHandler(filters.PHOTO, upload_ipn), MessageHandler(filters.TEXT & ~filters.COMMAND, step_6)],  # Крок 6
+            UPLOAD_MED_DOC: [MessageHandler(filters.PHOTO, upload_med_doc), MessageHandler(filters.TEXT & ~filters.COMMAND, step_6)],
             STEP_6: [MessageHandler(filters.TEXT & ~filters.COMMAND, step_6)],  # Крок 6
             UPLOAD_FINANCIAL_DOCUMENT: [MessageHandler(filters.PHOTO, upload_financial_document), MessageHandler(filters.TEXT & ~filters.COMMAND, step_6)],  # Крок 6
             STEP_7: [MessageHandler(filters.TEXT & ~filters.COMMAND, step_7)],  # Крок 7
             STEP_8: [MessageHandler(filters.TEXT & ~filters.COMMAND, step_8)],  # Крок 8
             STEP_9: [MessageHandler(filters.TEXT & ~filters.COMMAND, step_9)],  # Крок 9
             STEP_10: [MessageHandler(filters.TEXT & ~filters.COMMAND, step_10)],  # Крок 10
+            STEP_11: [MessageHandler(filters.TEXT & ~filters.COMMAND, step_11)]  # Крок 11
         },
         fallbacks=[
         CommandHandler("start", start),  # Додаємо перезапуск через /start
