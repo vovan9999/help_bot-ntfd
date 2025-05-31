@@ -1,10 +1,10 @@
 import os
 from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ConversationHandler, CallbackContext
-# from dotenv import load_dotenv
+from dotenv import load_dotenv
 
-# load_dotenv()
-# TOKEN = os.getenv("BOT_TOKEN")
+load_dotenv()
+TOKEN = os.getenv("BOT_TOKEN")
 
 # Стан для розмови
 (
@@ -431,7 +431,7 @@ async def unknown(update: Update, context: CallbackContext):
     await update.message.reply_text('Вибачте, я не зрозумів, що ви маєте на увазі.')
 
 def main():
-    application = Application.builder().token("5846578020:AAGcg3I2Nn3Yf6H-FAr-TcvNBfTOnTI3Pn4").build()
+    application = Application.builder().token(TOKEN).build()
 
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("start", start)],
