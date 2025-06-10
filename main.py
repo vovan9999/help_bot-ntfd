@@ -110,6 +110,11 @@ async def reminder_choice(update: Update, context: CallbackContext):
         )
         return REMINDER_DATETIME
     elif choice == "Я змінив(ла) пароль":
+        # Отримуємо дані користувача
+        user = update.message.from_user
+        first_name = user.first_name or ""
+        last_name = user.last_name or ""
+
         # Автоматично встановлюємо нагадування "Я змінив(ла) пароль" через 27 днів о 13:00
         local_tz = pytz.FixedOffset(180)  # UTC+3
         remind_at = datetime.now(local_tz) + timedelta(days=27)
@@ -129,10 +134,18 @@ async def reminder_choice(update: Update, context: CallbackContext):
 
 async def save_reminder(chat_id, text, remind_at, update):
     try:
+        # Отримуємо дані користувача
+        user = update.message.from_user
+        first_name = user.first_name or ""  # Беремо ім'я (або пустий рядок, якщо немає)
+        last_name = user.last_name or ""    # Беремо прізвище (або пустий рядок)
+
+        # Зберігаємо нагадування в базу даних
         conn, cursor = get_db_connection()
         cursor.execute(
-            "INSERT INTO reminders (chat_id, reminder_text, remind_at) VALUES (%s, %s, %s)",
-            (chat_id, text, remind_at)
+            """INSERT INTO reminders 
+            (chat_id, first_name, last_name, reminder_text, remind_at) 
+            VALUES (%s, %s, %s, %s, %s)""",
+            (chat_id, first_name, last_name, text, remind_at)
         )
         conn.commit()
         
