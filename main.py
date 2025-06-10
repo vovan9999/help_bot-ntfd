@@ -61,25 +61,25 @@ def get_db_connection():
     cursor = conn.cursor()
     return conn, cursor
 
-def create_reminders_table():
-    create_table_query = """
-    CREATE TABLE IF NOT EXISTS reminders (
-        id SERIAL PRIMARY KEY,
-        chat_id BIGINT NOT NULL,
-        reminder_text TEXT NOT NULL,
-        remind_at TIMESTAMPTZ NOT NULL,
-        is_sent BOOLEAN DEFAULT FALSE
-    );
-    """
-    try:
-        conn, cursor = get_db_connection()
-        cursor.execute(create_table_query)
-        conn.commit()
-        cursor.close()
-        conn.close()
-        print("Таблиця reminders створена або вже існує.")
-    except Exception as e:
-        print(f"Помилка при створенні таблиці: {e}")
+# def create_reminders_table():
+#     create_table_query = """
+#     CREATE TABLE IF NOT EXISTS reminders (
+#         id SERIAL PRIMARY KEY,
+#         chat_id BIGINT NOT NULL,
+#         reminder_text TEXT NOT NULL,
+#         remind_at TIMESTAMPTZ NOT NULL,
+#         is_sent BOOLEAN DEFAULT FALSE
+#     );
+#     """
+#     try:
+#         conn, cursor = get_db_connection()
+#         cursor.execute(create_table_query)
+#         conn.commit()
+#         cursor.close()
+#         conn.close()
+#         print("Таблиця reminders створена або вже існує.")
+#     except Exception as e:
+#         print(f"Помилка при створенні таблиці: {e}")
 
 # Функції для нагадувань
 async def create_reminder_start(update: Update, context: CallbackContext):
@@ -92,7 +92,7 @@ async def create_reminder_start(update: Update, context: CallbackContext):
 async def reminder_text(update: Update, context: CallbackContext):
     context.user_data['reminder_text'] = update.message.text
     reply_markup = ReplyKeyboardMarkup(
-        [["Вибрати конкретний день та час", "Через 27 днів"]],
+        [["Вибрати конкретний день та час", "Я змінив(ла) пароль"]],
         resize_keyboard=True
     )
     await update.message.reply_text(
@@ -109,8 +109,8 @@ async def reminder_choice(update: Update, context: CallbackContext):
             reply_markup=ReplyKeyboardRemove()
         )
         return REMINDER_DATETIME
-    elif choice == "Через 27 днів":
-        # Автоматично встановлюємо нагадування через 27 днів о 13:00
+    elif choice == "Я змінив(ла) пароль":
+        # Автоматично встановлюємо нагадування "Я змінив(ла) пароль" через 27 днів о 13:00
         local_tz = pytz.FixedOffset(180)  # UTC+3
         remind_at = datetime.now(local_tz) + timedelta(days=27)
         remind_at = remind_at.replace(hour=13, minute=0, second=0, microsecond=0)
@@ -190,7 +190,7 @@ async def reminder_datetime(update: Update, context: CallbackContext):
     except (ValueError, IndexError):
         await update.message.reply_text(
             "Неправильний формат дати/часу. Будь ласка, введіть у форматі ДД.ММ.РРРР ГГ:ХХ\n"
-            "Наприклад: 25-12-2023 14:30"
+            "Наприклад: 25-12-2025 14:30"
         )
         return REMINDER_DATETIME
 
@@ -351,7 +351,6 @@ async def conditions_documents(update: Update, context: CallbackContext):
         "Ознайомтесь із порадами щодо подальших дій у разі страхового випадку за посиланням: \n https://uniqa.ua/case/medytsyna/\n\n"
         "Дякуємо за звернення! \n\n",
         reply_markup = ReplyKeyboardMarkup([["Подати документи 📄", "Умови ℹ️ ❓❗️"],["Повернутися"]], resize_keyboard=True)
-        # parse_mode='Markdown'
     )
     return AWAITING_DOCUMENTS
 
@@ -518,14 +517,14 @@ async def step_9(update: Update, context: CallbackContext):
             "Сума виплати буде зменшена на комісію АТ «Райффайзен Банк» чинну на дату операції.",
             reply_markup=reply_markup
         )
-        return STEP_10  # Перехід до підтвердження
+        return STEP_10
 
     elif text == "Реквізити (IBAN рахунку)":
         await update.message.reply_text(
             "Введіть номер IBAN (UA…...29 символів):",
             reply_markup=ReplyKeyboardRemove()
         )
-        return STEP_10  # Той же стан, але очікує IBAN
+        return STEP_10
 
     elif text == "Повернутися":
         # Повернення до step_7 (вибір документів)
@@ -545,7 +544,7 @@ async def step_9(update: Update, context: CallbackContext):
 async def step_10(update: Update, context: CallbackContext):
     text = update.message.text
 
-    if text == "Продовжити" or (text and len(text) == 29):  # IBAN або кнопка
+    if text == "Продовжити" or (text and len(text) == 29):
         reply_markup = ReplyKeyboardMarkup(
             [
                 ["Підтверджую коректність реквізитів та напрямок виплати"],
@@ -606,7 +605,7 @@ async def step_11(update: Update, context: CallbackContext):
 
     elif text == "Відмінити відправку заявки":
         # Скасування
-        return await step_10(update, context)  # Або відразу в головне меню
+        return await step_10(update, context)
 
     return STEP_11
 
@@ -617,7 +616,7 @@ async def unknown(update: Update, context: CallbackContext):
 
 def main():
     # Створюємо таблицю для нагадувань при запуску
-    create_reminders_table()
+    # create_reminders_table()
 
     application = Application.builder().token(TOKEN).build()
 
@@ -648,7 +647,6 @@ def main():
             STEP_9: [MessageHandler(filters.TEXT & ~filters.COMMAND, step_9)],
             STEP_10: [MessageHandler(filters.TEXT & ~filters.COMMAND, step_10)],
             STEP_11: [MessageHandler(filters.TEXT & ~filters.COMMAND, step_11)],
-            # Стани для нагадувань
             REMINDER_TEXT: [MessageHandler(filters.TEXT & ~filters.COMMAND, reminder_text)],
             REMINDER_CHOICE: [MessageHandler(filters.TEXT & ~filters.COMMAND, reminder_choice)],
             REMINDER_DATETIME: [MessageHandler(filters.TEXT & ~filters.COMMAND, reminder_datetime)],
@@ -671,5 +669,5 @@ if __name__ == "__main__":
     import asyncio
     import nest_asyncio
 
-    nest_asyncio.apply()  # Якщо запускаєш в середовищі з вже запущеним event loop, як Jupyter або деякі IDE
+    nest_asyncio.apply()
     asyncio.run(main())
