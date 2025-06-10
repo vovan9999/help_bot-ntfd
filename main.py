@@ -57,16 +57,9 @@ medical_menu = [["Запис до лікаря 💊", "Висновок ліка
 
 # Функції для роботи з базою даних
 def get_db_connection():
-    try:
-        conn = psycopg2.connect(
-            os.getenv("DATABASE_URL"),
-            sslmode='require',  # Обов'язково для Railway
-            cursor_factory=RealDictCursor
-        )
-        return conn
-    except Exception as e:
-        print(f"Помилка підключення: {e}")
-        return None
+    conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
+    cursor = conn.cursor()
+    return conn, cursor
 
 # def create_reminders_table():
 #     create_table_query = """
