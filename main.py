@@ -12,7 +12,7 @@ import pytz
 load_dotenv()
 TOKEN = os.getenv("BOT_TOKEN")
 
-DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_URL = "postgresql://postgres:mqaLHlWVRaqdXlHEibLyaDNegmbjsovf@nozomi.proxy.rlwy.net:35425/railway"
 
 # Стан для розмови
 (
