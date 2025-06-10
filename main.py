@@ -12,7 +12,7 @@ import pytz
 load_dotenv()
 TOKEN = os.getenv("BOT_TOKEN")
 
-DATABASE_URL = "postgresql://postgres:mqaLHlWVRaqdXlHEibLyaDNegmbjsovf@nozomi.proxy.rlwy.net:35425/railway"
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 # Стан для розмови
 (
@@ -57,9 +57,16 @@ medical_menu = [["Запис до лікаря 💊", "Висновок ліка
 
 # Функції для роботи з базою даних
 def get_db_connection():
-    conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
-    cursor = conn.cursor()
-    return conn, cursor
+    try:
+        conn = psycopg2.connect(
+            os.getenv("DATABASE_URL"),
+            sslmode='require',  # Обов'язково для Railway
+            cursor_factory=RealDictCursor
+        )
+        return conn
+    except Exception as e:
+        print(f"Помилка підключення: {e}")
+        return None
 
 # def create_reminders_table():
 #     create_table_query = """
@@ -139,7 +146,7 @@ async def save_reminder(chat_id, text, remind_at, update):
         # Форматуємо дату для виводу
         local_tz = pytz.FixedOffset(180)  # UTC+3
         local_time = remind_at.astimezone(local_tz)
-        formatted_date = local_time.strftime("%d.%m.%Y %H:%M")
+        formatted_date = local_time.strftime("%d.%m.%Y в %H:%M")
         
         await update.message.reply_text(
             f"⏰ Нагадування: <b>{text.upper()}</b>\n"
