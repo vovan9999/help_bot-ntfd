@@ -12,7 +12,7 @@ import pytz
 load_dotenv()
 TOKEN = os.getenv("BOT_TOKEN")
 
-DATABASE_URL = os.getenv("DATABASE_PUBLIC_URL")
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 # Стан для розмови
 (
@@ -61,25 +61,25 @@ def get_db_connection():
     cursor = conn.cursor()
     return conn, cursor
 
-# def create_reminders_table():
-#     create_table_query = """
-#     CREATE TABLE IF NOT EXISTS reminders (
-#         id SERIAL PRIMARY KEY,
-#         chat_id BIGINT NOT NULL,
-#         reminder_text TEXT NOT NULL,
-#         remind_at TIMESTAMPTZ NOT NULL,
-#         is_sent BOOLEAN DEFAULT FALSE
-#     );
-#     """
-#     try:
-#         conn, cursor = get_db_connection()
-#         cursor.execute(create_table_query)
-#         conn.commit()
-#         cursor.close()
-#         conn.close()
-#         print("Таблиця reminders створена або вже існує.")
-#     except Exception as e:
-#         print(f"Помилка при створенні таблиці: {e}")
+def create_reminders_table():
+    create_table_query = """
+    CREATE TABLE IF NOT EXISTS reminders (
+        id SERIAL PRIMARY KEY,
+        chat_id BIGINT NOT NULL,
+        reminder_text TEXT NOT NULL,
+        remind_at TIMESTAMPTZ NOT NULL,
+        is_sent BOOLEAN DEFAULT FALSE
+    );
+    """
+    try:
+        conn, cursor = get_db_connection()
+        cursor.execute(create_table_query)
+        conn.commit()
+        cursor.close()
+        conn.close()
+        print("Таблиця reminders створена або вже існує.")
+    except Exception as e:
+        print(f"Помилка при створенні таблиці: {e}")
 
 # Функції для нагадувань
 async def create_reminder_start(update: Update, context: CallbackContext):
@@ -617,7 +617,7 @@ async def unknown(update: Update, context: CallbackContext):
 
 def main():
     # Створюємо таблицю для нагадувань при запуску
-    # create_reminders_table()
+    create_reminders_table()
 
     application = Application.builder().token(TOKEN).build()
 
