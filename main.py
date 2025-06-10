@@ -12,7 +12,7 @@ import pytz
 load_dotenv()
 TOKEN = os.getenv("BOT_TOKEN")
 
-DATABASE_URL = os.getenv("DATABASE_PUBLIC_URL")
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 # Стан для розмови
 (
