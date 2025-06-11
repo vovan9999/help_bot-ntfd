@@ -138,14 +138,17 @@ async def save_reminder(chat_id, text, remind_at, update):
         user = update.message.from_user
         first_name = user.first_name or ""  # Беремо ім'я (або пустий рядок, якщо немає)
         last_name = user.last_name or ""    # Беремо прізвище (або пустий рядок)
+        user_id = update.message.from_user.id
+        username = update.message.from_user.username
+        
 
         # Зберігаємо нагадування в базу даних
         conn, cursor = get_db_connection()
         cursor.execute(
             """INSERT INTO reminders 
-            (chat_id, first_name, last_name, reminder_text, remind_at) 
+            (chat_id, first_name, last_name, user_id, username, reminder_text, remind_at) 
             VALUES (%s, %s, %s, %s, %s)""",
-            (chat_id, first_name, last_name, text, remind_at)
+            (chat_id, first_name, last_name, user_id, username, text, remind_at)
         )
         conn.commit()
         
